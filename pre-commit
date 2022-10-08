@@ -1,0 +1,27 @@
+#!/bin/bash
+#
+# This hook will try to run stylelint for scss files and PHPCS for Drupal files.
+# If any violation is found it will exit with a non-zero code
+#
+
+changed_files=$(git diff --name-only --cached)
+for file in $changed_files; do
+  file_extension=$(echo $file | cut -d "." -f2)
+  if [ $file_extension == "scss" ]; then
+    lint_result=$(npx stylelint $file)
+    if [ $? -eq 2 ]; then
+      echo "[LINT ERROR]:" $lint_result
+      echo "Try running 'npx stylelint $file --fix' to auto fix"
+      exit 1
+    fi;
+  fi;
+
+  if [ $file_extension == "module" ] || [ $file_extension == "inc" ] || [ $file_extension == "php" ]; then
+    lint_result=$(phpcs --standard=Drupal --extensions=php,module,inc $file)
+    if [ $? -eq 2 ]; then
+      echo "[PHPCS ERROR]"
+      exec phpcs --standard=Drupal --extensions=php,module,inc $file
+      exit 1
+    fi
+  fi;
+done
