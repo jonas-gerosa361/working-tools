@@ -10,9 +10,11 @@ for file in $changed_files; do
   if [ $file_extension == "scss" ]; then
     lint_result=$(npx stylelint $file)
     if [ $? -eq 2 ]; then
-      echo "[LINT ERROR]:" $lint_result
+      echo "[LINT ERROR]"
       echo "Try running 'npx stylelint $file --fix' to auto fix"
+      exec npx stylelint $file
       exit 1
+
     fi;
   fi;
 
